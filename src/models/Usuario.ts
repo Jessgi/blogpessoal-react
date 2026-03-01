@@ -1,14 +1,10 @@
-import type Tema from "./Tema";
-import type Usuario from './Usuario';
+import type Postagem from "./Postagem";
 
-export default interface Postagem {
-  foto: string | number | readonly string[] | undefined;
-  nome: string | number | readonly string[] | undefined;
-  senha: string;
+export default interface Usuario {
   id: number;
-  titulo: string;
-  texto: string;
-  data: string;
-  tema: Tema | null;
-  usuario: Usuario | null;
+  nome: string;
+  usuario: string;
+  foto: string;
+  senha: string;
+  postagem?: Postagem[] | null;
 }

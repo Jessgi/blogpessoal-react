@@ -1,8 +1,10 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
+import axios from "axios";
 import type Usuario from "../../models/Usuario";
 import { cadastrarUsuario } from "../../services/Service";
+import { ToastAlerta } from "../../utils/ToastAlerta";
 
 function Cadastro() {
 
@@ -45,23 +47,58 @@ function Cadastro() {
   async function cadastrarNovoUsuario(e: FormEvent<HTMLFormElement>){
     e.preventDefault()
 
-    if(confirmarSenha === usuario.senha && usuario.senha.length >= 8){
+    // Trim e validação
+    const nome = usuario.nome.trim()
+    const emailUsuario = usuario.usuario.trim()
+    const senha = usuario.senha.trim()
+    const senhaConfirmada = confirmarSenha.trim()
+    const foto = usuario.foto.trim()
 
-      setIsLoading(true)
-
-      try{
-        await cadastrarUsuario(`/usuarios/cadastrar`, usuario, setUsuario)
-        alert('Usuário cadastrado com sucesso!')
-      }catch(error){
-        alert('Erro ao cadastrar o usuário!')
-      }
-    }else{
-      alert('Dados do usuário inconsistentes! Verifique as informações do cadastro.')
-      setUsuario({...usuario, senha: ''})
-      setConfirmarSenha('')
+    if(!nome || !emailUsuario || !senha || !senhaConfirmada){
+      ToastAlerta('Preencha todos os campos obrigatórios.', 'erro')
+      return
     }
 
-    setIsLoading(false)
+    if(senha.length < 8){
+      ToastAlerta('A senha deve ter no mínimo 8 caracteres.', 'erro')
+      return
+    }
+
+    if(senha !== senhaConfirmada){
+      ToastAlerta('As senhas não conferem.', 'erro')
+      setUsuario({...usuario, senha: ''})
+      setConfirmarSenha('')
+      return
+    }
+
+    const novoUsuario: Usuario = {
+      id: 0,
+      nome,
+      usuario: emailUsuario,
+      senha,
+      foto
+    }
+
+    setIsLoading(true)
+
+    try{
+      console.log('📤 Enviando:', novoUsuario)
+      await cadastrarUsuario(`/usuarios/cadastrar`, novoUsuario, setUsuario)
+      console.log('✅ Cadastro OK!')
+      ToastAlerta('Usuário cadastrado com sucesso!', 'sucesso')
+    }catch(error){
+      console.error('❌ Erro:', error)
+      if (axios.isAxiosError(error)) {
+        console.error('Status:', error.response?.status)
+        console.error('Dados:', error.response?.data)
+        const msg = error.response?.data?.message || error.response?.statusText || 'Erro ao cadastrar'
+        ToastAlerta(msg, 'erro')
+      } else {
+        ToastAlerta('Erro ao cadastrar o usuário!', 'erro')
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

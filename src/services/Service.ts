@@ -1,9 +1,4 @@
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "https://backedndothiagojs12.onrender.com"
-  // (use o seu backend real aqui)
-});
+import { api } from "./api";
 
 export const cadastrarUsuario = async (url: string, dados: object, setDados: Function) => {
   const resposta = await api.post(url, dados);
